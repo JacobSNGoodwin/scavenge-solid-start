@@ -5,7 +5,7 @@ export default defineConfig({
   plugins: [solid()],
   server: {
     proxy: {
-      '/pb': {},
+      '/pb': 'http://127.0.0.1:8090/api',
     },
   },
 });

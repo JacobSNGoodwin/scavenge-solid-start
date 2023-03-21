@@ -1,13 +1,16 @@
 {
   "name": "scavenge-solid-start",
   "scripts": {
-    "dev": "solid-start dev",
+    "dev:solid": "solid-start dev",
+    "pb": "./pb/pocketbase serve",
+    "dev": "concurrently 'pnpm:pb' 'pnpm:dev:solid' -c red,green",
     "build": "solid-start build",
     "start": "solid-start start"
   },
   "type": "module",
   "devDependencies": {
     "autoprefixer": "^10.4.13",
+    "concurrently": "^7.6.0",
     "postcss": "^8.4.21",
     "solid-start-node": "^0.2.19",
     "tailwindcss": "^3.2.4",
