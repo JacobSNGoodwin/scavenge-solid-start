@@ -1,19 +1,29 @@
 import { createServerData$ } from 'solid-start/server';
 import { nanoid } from 'nanoid';
 import GitHubIcon from '~icons/octicon/mark-github-16';
-import { useRouteData } from 'solid-start';
+import { RouteDataArgs, useRouteData } from 'solid-start';
 import { Show } from 'solid-js';
 
-export function routeData() {
-  return createServerData$(() => {
-    return {
-      authUrls: {
-        github: `https://github.com/login/oauth/authorize?client_id=${
-          process.env.OAUTH_GH_CLIENT
-        }&scope=user&state=${nanoid(12)}`,
+export function routeData({ location }: RouteDataArgs) {
+  return createServerData$(
+    ({ searchParams }) => {
+      const authError = searchParams.get('auth_error');
+      return {
+        authUrls: {
+          github: `https://github.com/login/oauth/authorize?client_id=${
+            process.env.OAUTH_GH_CLIENT
+          }&scope=user&state=${nanoid(12)}`,
+        },
+        authError: authError && `Failed to authorize via ${authError}`,
+      };
+    },
+    {
+      key: () => {
+        const searchParams = new URLSearchParams(location.search);
+        return { searchParams };
       },
-    };
-  });
+    }
+  );
 }
 
 export default function Home() {
@@ -31,6 +41,9 @@ export default function Home() {
           <GitHubIcon class="text-xl" style="color:#ffffff" />
           <span class="ml-2 text-xl text-white">Login with GitHub</span>
         </a>
+      </Show>
+      <Show when={config()?.authError}>
+        <p class="my-2 text-red-600">{config()?.authError}</p>
       </Show>
     </main>
   );
