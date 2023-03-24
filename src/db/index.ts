@@ -2,13 +2,38 @@ import Database from 'better-sqlite3';
 import { BetterSQLite3Database, drizzle } from 'drizzle-orm/better-sqlite3';
 
 import { eq } from 'drizzle-orm/expressions';
-import { users } from './schema';
+import { nanoid } from 'nanoid';
+import { User, users } from './schema';
 
 const sqlite = new Database('scavenge.db');
 const db: BetterSQLite3Database = drizzle(sqlite);
 
 // better-sqlite3 is syncronous
 
-export const getUserById = (id: string) => {
+export const getUserByEmail = (email: string): User | null => {
+  // you'd think this would handle not found. Sigh!
+  const rows = db.select().from(users).where(eq(users.email, email)).all();
+
+  if (!rows.length) {
+    return null;
+  }
+
+  return rows[0];
+};
+
+export const getUserById = (id: string) =>
   db.select().from(users).where(eq(users.id, id)).get();
+
+type NewUserData = Omit<User, 'id'>;
+
+export const createNewUser = (user: NewUserData) => {
+  const id = nanoid(20);
+
+  const { id: createdId } = db
+    .insert(users)
+    .values({ ...user, id })
+    .returning()
+    .get();
+
+  return createdId;
 };
