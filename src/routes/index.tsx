@@ -6,8 +6,7 @@ import { Show } from 'solid-js';
 
 export function routeData({ location }: RouteDataArgs) {
   return createServerData$(
-    ({ searchParams }) => {
-      const authError = searchParams.get('auth_error');
+    ({ authError }) => {
       return {
         authUrls: {
           github: `https://github.com/login/oauth/authorize?client_id=${
@@ -18,10 +17,7 @@ export function routeData({ location }: RouteDataArgs) {
       };
     },
     {
-      key: () => {
-        const searchParams = new URLSearchParams(location.search);
-        return { searchParams };
-      },
+      key: () => ({ authError: location.query['auth_error'] }),
     }
   );
 }

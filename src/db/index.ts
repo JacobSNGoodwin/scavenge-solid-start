@@ -21,7 +21,7 @@ export const getUserByEmail = (email: string): User | null => {
   return rows[0];
 };
 
-export const getUserById = (id: string) =>
+export const getUserById = (id: string): User =>
   db.select().from(users).where(eq(users.id, id)).get();
 
 type NewUserData = Omit<User, 'id'>;

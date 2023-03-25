@@ -3,6 +3,7 @@ import { useRouteData, RouteDataArgs } from 'solid-start';
 import { createServerData$, redirect } from 'solid-start/server';
 import { createNewUser, getUserByEmail } from '~/db';
 import { buildAuthConfigs } from '~/lib/authConfigs';
+import { createUserSession } from '~/lib/session';
 
 export function routeData({ location, params }: RouteDataArgs) {
   return createServerData$(
@@ -33,7 +34,7 @@ export function routeData({ location, params }: RouteDataArgs) {
           // I think access_token is standard for Oauth2a
           throw new Error(`Unable to authorize with provider: [${provider}]`);
         }
-        console.debug('received authData', authData);
+        // console.debug('received authData', authData);
 
         // get user update user profile
         const externalUserResponse = await fetch(config.userUrl, {
@@ -44,7 +45,7 @@ export function routeData({ location, params }: RouteDataArgs) {
         }
 
         const externalUserData = await externalUserResponse.json();
-        console.debug('retrieved externalUserData', externalUserData);
+        // console.debug('retrieved externalUserData', externalUserData);
 
         // getUser -> if not user create user
         // create session
@@ -56,7 +57,7 @@ export function routeData({ location, params }: RouteDataArgs) {
           console.info('creating new user', user);
         }
 
-        const userId =
+        const userId: string =
           user?.id ??
           createNewUser({
             avatar_url: externalUserData[config.fields.avatar_url],
@@ -67,10 +68,7 @@ export function routeData({ location, params }: RouteDataArgs) {
             },
           });
 
-        // redirect to /scavenger-hunts
-        console.debug('Creating session for user id: ', userId);
-
-        return { externalUserData };
+        return createUserSession(userId, '/scavenger-hunts');
       } catch (e) {
         console.debug('the error', e);
         return redirect(`/?auth_error=${provider}`);
@@ -90,14 +88,9 @@ export default function OauthRedirect() {
 
   return (
     <main class="text-center mx-auto text-gray-700 p-4">
-      <Show when={data.loading}>
+      <Show when={!data()}>
         <h1 class="max-6-xs text-6xl text-sky-700 font-thin uppercase my-16">
           Logging in ...
-        </h1>
-      </Show>
-      <Show when={data()}>
-        <h1 class="max-6-xs text-6xl text-sky-700 font-thin uppercase my-16">
-          Getting your list!
         </h1>
       </Show>
     </main>
