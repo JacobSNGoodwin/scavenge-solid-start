@@ -53,6 +53,17 @@ export const getUserScavengerHunts = (userId: string): Array<ScavengerHunt> =>
     .orderBy(asc(scavenger_hunts.title))
     .all();
 
+export const addScavengerHunt = (title: string, userId: string) =>
+  db
+    .insert(scavenger_hunts)
+    .values({
+      id: nanoid(20),
+      created_by: userId,
+      title,
+    })
+    .returning()
+    .get();
+
 export const getScavengerHunt = (id: string, userId: string) =>
   db
     .select()
@@ -61,4 +72,5 @@ export const getScavengerHunt = (id: string, userId: string) =>
     .where(
       and(eq(scavenger_hunts.id, id), eq(scavenger_hunts.created_by, userId))
     )
+    .orderBy(asc(hunt_items.weight))
     .get();

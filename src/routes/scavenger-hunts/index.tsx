@@ -1,22 +1,32 @@
 import { For, Show } from 'solid-js';
 import { A, RouteDataArgs, useIsRouting, useRouteData } from 'solid-start';
-import { createServerAction$, createServerData$ } from 'solid-start/server';
+import {
+  createServerAction$,
+  createServerData$,
+  redirect,
+} from 'solid-start/server';
 import RightChevronIcon from '~icons/mdi/chevron-right-circle';
-import { getUserById, getUserScavengerHunts } from '~/db';
+import { addScavengerHunt, getUserById, getUserScavengerHunts } from '~/db';
 import Loading from '~icons/svg-spinners/3-dots-fade';
 import { requireUserId, logout } from '~/lib/session';
+import ScavengerHuntInput from '~/components/ScavngerHuntInput';
 
 export function routeData({}: RouteDataArgs) {
-  return createServerData$(async (_, { request }) => {
-    const userId = await requireUserId(request);
+  return createServerData$(
+    async (_, { request }) => {
+      const userId = await requireUserId(request);
 
-    const scavengerHunts = getUserScavengerHunts(userId);
+      const scavengerHunts = getUserScavengerHunts(userId);
 
-    return {
-      user: getUserById(userId),
-      scavengerHunts,
-    };
-  });
+      return {
+        user: getUserById(userId),
+        scavengerHunts,
+      };
+    },
+    {
+      key: 'scavenger-hunts',
+    }
+  );
 }
 
 export default function ScavengerHunts() {
@@ -25,6 +35,26 @@ export default function ScavengerHunts() {
   const [isLoggingOut, handleLogout] = createServerAction$((_, { request }) => {
     return logout(request);
   });
+
+  const [isAddingHunt, addHunt] = createServerAction$(
+    async (title: string, { request }) => {
+      const userId = await requireUserId(request);
+
+      const { id: newId } = addScavengerHunt(title, userId);
+
+      return redirect(`${newId}`);
+    },
+    { invalidate: ['scavenger-hunts'] }
+  );
+
+  const shouldShowLoader = () => {
+    return (
+      isRouting() ||
+      isLoggingOut.pending ||
+      isAddingHunt.pending ||
+      data.loading
+    );
+  };
 
   return (
     <main class="mx-auto text-gray-700 p-4">
@@ -40,12 +70,12 @@ export default function ScavengerHunts() {
         <h2 class="text-center">Welcome, {data()?.user?.name}</h2>
       </Show>
 
-      <Show when={isRouting()} fallback={<div class="h-12" />}>
+      <Show when={shouldShowLoader()} fallback={<div class="h-12" />}>
         <Loading class="h-12 mx-auto text-4xl text-orange-700" />
       </Show>
 
       <h1 class="text-center max-6-xs text-6xl text-sky-700 font-thin uppercase mt-4 mb-8">
-        Scavenger Hunts
+        My Hunts
       </h1>
 
       <Show when={data()}>
@@ -62,6 +92,13 @@ export default function ScavengerHunts() {
           </For>
         </div>
       </Show>
+
+      <ScavengerHuntInput
+        disabled={isAddingHunt.pending}
+        onSubmit={(title) => {
+          addHunt(title);
+        }}
+      />
     </main>
   );
 }
