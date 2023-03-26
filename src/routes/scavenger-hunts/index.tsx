@@ -1,8 +1,9 @@
 import { For, Show } from 'solid-js';
-import { A, RouteDataArgs, useRouteData } from 'solid-start';
+import { A, RouteDataArgs, useIsRouting, useRouteData } from 'solid-start';
 import { createServerAction$, createServerData$ } from 'solid-start/server';
 import RightChevronIcon from '~icons/mdi/chevron-right-circle';
 import { getUserById, getUserScavengerHunts } from '~/db';
+import Loading from '~icons/svg-spinners/3-dots-fade';
 import { requireUserId, logout } from '~/lib/session';
 
 export function routeData({}: RouteDataArgs) {
@@ -20,6 +21,7 @@ export function routeData({}: RouteDataArgs) {
 
 export default function ScavengerHunts() {
   const data = useRouteData<typeof routeData>();
+  const isRouting = useIsRouting();
   const [isLoggingOut, handleLogout] = createServerAction$((_, { request }) => {
     return logout(request);
   });
@@ -38,7 +40,11 @@ export default function ScavengerHunts() {
         <h2 class="text-center">Welcome, {data()?.user?.name}</h2>
       </Show>
 
-      <h1 class="text-center max-6-xs text-6xl text-sky-700 font-thin uppercase my-8">
+      <Show when={isRouting()} fallback={<div class="h-12" />}>
+        <Loading class="h-12 mx-auto text-4xl text-orange-700" />
+      </Show>
+
+      <h1 class="text-center max-6-xs text-6xl text-sky-700 font-thin uppercase mt-4 mb-8">
         Scavenger Hunts
       </h1>
 
