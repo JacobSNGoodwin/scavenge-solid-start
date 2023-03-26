@@ -15,11 +15,16 @@
 
 ## Scavenger Hunts List
 
-- [ ] - get user's scavenger hunts list
+- [x] - get user's scavenger hunts list
+- [ ] - link to Scavenger Hunt page
 - [ ] - actions to add/update/invalidate scavenger hunt lists
 - [ ] -
 
 ## Edit Page
+
+- [ ] - fetch details from database (ScavengerHunt and HuntItems)
+  - could do a join to get all details, or could fetch separately
+- [ ] - action to post new item, invalidate existing list of items (refetch details)
 
 ## Improvements
 

@@ -3,7 +3,14 @@ import { BetterSQLite3Database, drizzle } from 'drizzle-orm/better-sqlite3';
 
 import { asc, eq } from 'drizzle-orm/expressions';
 import { nanoid } from 'nanoid';
-import { ScavengerHunt, scavenger_hunts, User, users } from './schema';
+import {
+  HuntItem,
+  hunt_items,
+  ScavengerHunt,
+  scavenger_hunts,
+  User,
+  users,
+} from './schema';
 
 const sqlite = new Database('scavenge.db');
 const db: BetterSQLite3Database = drizzle(sqlite);
@@ -38,12 +45,21 @@ export const createNewUser = (user: NewUserData) => {
   return createdId;
 };
 
-export const getUserScavengerHunts = (id: string): Array<ScavengerHunt> =>
+export const getUserScavengerHunts = (userId: string): Array<ScavengerHunt> =>
   db
     .select()
     .from(scavenger_hunts)
-    .where(eq(scavenger_hunts.created_by, id))
+    .where(eq(scavenger_hunts.created_by, userId))
     .orderBy(asc(scavenger_hunts.title))
     .all();
 
-// export const getScavengerHunt = (id: string) => db.select().from();
+export const getScavengerHunt = (id: string): ScavengerHunt =>
+  db.select().from(scavenger_hunts).where(eq(scavenger_hunts.id, id)).get();
+
+export const getScavengerHuntDetails = (id: string): Array<HuntItem> =>
+  db
+    .select()
+    .from(hunt_items)
+    .where(eq(hunt_items.scavenger_hunt_id, id))
+    .orderBy(asc(hunt_items.weight))
+    .all();
