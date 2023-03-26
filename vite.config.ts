@@ -6,6 +6,6 @@ import dns from 'dns';
 export default defineConfig({
   plugins: [solid(), Icons({ compiler: 'solid' })],
   server: {
-    host: true,
+    host: '127.0.0.1',
   },
 });

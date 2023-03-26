@@ -1,7 +1,7 @@
 import Database from 'better-sqlite3';
 import { BetterSQLite3Database, drizzle } from 'drizzle-orm/better-sqlite3';
 
-import { eq } from 'drizzle-orm/expressions';
+import { asc, eq } from 'drizzle-orm/expressions';
 import { nanoid } from 'nanoid';
 import { ScavengerHunt, scavenger_hunts, User, users } from './schema';
 
@@ -43,4 +43,7 @@ export const getUserScavengerHunts = (id: string): Array<ScavengerHunt> =>
     .select()
     .from(scavenger_hunts)
     .where(eq(scavenger_hunts.created_by, id))
+    .orderBy(asc(scavenger_hunts.title))
     .all();
+
+// export const getScavengerHunt = (id: string) => db.select().from();
