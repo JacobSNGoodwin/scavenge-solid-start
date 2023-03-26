@@ -1,12 +1,20 @@
-import { createServerData$ } from 'solid-start/server';
+import { createServerData$, redirect } from 'solid-start/server';
 import { nanoid } from 'nanoid';
 import GitHubIcon from '~icons/octicon/mark-github-16';
 import { RouteDataArgs, useRouteData } from 'solid-start';
 import { Show } from 'solid-js';
+import { getUser } from '~/lib/session';
 
 export function routeData({ location }: RouteDataArgs) {
   return createServerData$(
-    ({ authError }) => {
+    async ({ authError }, { request }) => {
+      const user = await getUser(request);
+
+      if (user) {
+        // seems weird to throw, but does help with return types
+        throw redirect('/scavenger-hunts');
+      }
+
       return {
         authUrls: {
           github: `https://github.com/login/oauth/authorize?client_id=${
@@ -23,14 +31,14 @@ export function routeData({ location }: RouteDataArgs) {
 }
 
 export default function Home() {
-  const config = useRouteData<typeof routeData>();
+  const authConfigData = useRouteData<typeof routeData>();
 
   return (
     <main class="text-center mx-auto text-gray-700 p-4">
       <h1 class="max-6-xs text-6xl font-thin uppercase my-16">Scavenge</h1>
-      <Show when={!config.loading}>
+      <Show when={!authConfigData.loading}>
         <a
-          href={config()?.authUrls.github}
+          href={authConfigData()?.authUrls.github}
           class="mx-auto w-64 flex justify-center items-center p-4 rounded-lg"
           style="background-color:#6e5494"
         >
@@ -38,8 +46,8 @@ export default function Home() {
           <span class="ml-2 text-xl text-white">Login with GitHub</span>
         </a>
       </Show>
-      <Show when={config()?.authError}>
-        <p class="my-2 text-red-600">{config()?.authError}</p>
+      <Show when={authConfigData()?.authError}>
+        <p class="my-2 text-red-600">{authConfigData()?.authError}</p>
       </Show>
     </main>
   );

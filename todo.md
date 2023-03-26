@@ -11,6 +11,7 @@
 - [x] - route to Scavenger-Hunt page
   - [x] - require auth
   - [x] - logout action
+- [x] - forward to `scavenger-hunts` from home page if logged.
 
 ## Scavenger Hunts List
 

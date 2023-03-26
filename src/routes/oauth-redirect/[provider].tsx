@@ -70,8 +70,8 @@ export function routeData({ location, params }: RouteDataArgs) {
 
         return createUserSession(userId, '/scavenger-hunts');
       } catch (e) {
-        console.debug('the error', e);
-        return redirect(`/?auth_error=${provider}`);
+        // console.debug('the error', e);
+        throw redirect(`/?auth_error=${provider}`);
       }
     },
     {

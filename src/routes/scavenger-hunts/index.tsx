@@ -1,19 +1,19 @@
-import { Show } from 'solid-js';
+import { For, Show } from 'solid-js';
 import { RouteDataArgs, useRouteData } from 'solid-start';
 import { createServerAction$, createServerData$ } from 'solid-start/server';
-import { getUserById } from '~/db';
+import { getUserById, getUserScavengerHunts } from '~/db';
 import { requireUserId, logout } from '~/lib/session';
 
 export function routeData({}: RouteDataArgs) {
-  // TODO - could return multiple route data, 1 for user and 1 for scavnger
-  // hunt lists
   return createServerData$(async (_, { request }) => {
     const userId = await requireUserId(request);
 
-    const user = getUserById(userId);
-    // const scavengerHunts = getUserScaven
+    const scavengerHunts = getUserScavengerHunts(userId);
 
-    return { user };
+    return {
+      user: getUserById(userId),
+      scavengerHunts,
+    };
   });
 }
 
@@ -39,6 +39,8 @@ export default function ScavengerHunts() {
 
       <Show when={data()}>
         <h2>Welcome, {data()?.user?.name ?? 'Super Duper User'}</h2>
+
+        <For each={data()?.scavengerHunts}>{(sh) => <h3>{sh.title}</h3>}</For>
       </Show>
     </main>
   );
