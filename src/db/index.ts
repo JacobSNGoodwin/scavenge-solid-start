@@ -74,3 +74,11 @@ export const getScavengerHunt = (id: string, userId: string) =>
     )
     .orderBy(asc(hunt_items.weight))
     .get();
+
+export const deleteScavengerHunt = (id: string, userId: string) =>
+  db
+    .delete(scavenger_hunts)
+    .where(
+      and(eq(scavenger_hunts.id, id), eq(scavenger_hunts.created_by, userId))
+    )
+    .run();

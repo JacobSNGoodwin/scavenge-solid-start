@@ -17,9 +17,9 @@
 
 - [x] - get user's scavenger hunts list
 - [x] - link to Scavenger Hunt (hunt-items) page
-- [ ] - NewScavengerHunt component
-- [ ] - actions to add/update/invalidate scavenger hunt lists
-- [ ] - delete action
+- [x] - NewScavengerHunt component
+- [x] - actions to add/invalidate scavenger hunt lists
+- [x] - ~~delete action~~ handle this in Edit Page
 
 ## Edit Page
 
