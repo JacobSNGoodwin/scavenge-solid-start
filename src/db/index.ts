@@ -73,7 +73,7 @@ export const getScavengerHunt = (id: string, userId: string) =>
       and(eq(scavenger_hunts.id, id), eq(scavenger_hunts.created_by, userId))
     )
     .orderBy(asc(hunt_items.weight))
-    .get();
+    .all();
 
 export const deleteScavengerHunt = (id: string, userId: string) =>
   db
@@ -82,3 +82,18 @@ export const deleteScavengerHunt = (id: string, userId: string) =>
       and(eq(scavenger_hunts.id, id), eq(scavenger_hunts.created_by, userId))
     )
     .run();
+
+export const addHuntItem = ({
+  scavenger_hunt_id,
+  title,
+  weight,
+}: Omit<HuntItem, 'id'>) => {
+  db.insert(hunt_items)
+    .values({
+      id: nanoid(20),
+      title,
+      weight,
+      scavenger_hunt_id,
+    })
+    .run();
+};

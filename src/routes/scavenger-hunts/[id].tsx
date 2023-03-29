@@ -12,32 +12,41 @@ import {
 } from 'solid-start/server';
 import LeftChevronIcon from '~icons/mdi/chevron-left-circle';
 
-import { deleteScavengerHunt, getScavengerHunt } from '~/db';
+import { addHuntItem, deleteScavengerHunt, getScavengerHunt } from '~/db';
 import { requireUserId } from '~/lib/session';
-import { createEffect, createSignal, Show } from 'solid-js';
+import { createEffect, createSignal, For, Show } from 'solid-js';
 import Loading from '~icons/svg-spinners/3-dots-fade';
 import ConfirmationModal from '~/components/ConfirmationModal';
+import ScavengerHuntItemInput from '~/components/ScavngerHuntItemInput';
 
 export function routeData({ params }: RouteDataArgs) {
   return createServerData$(
-    async ({ scavengerHunt }, { request }) => {
+    async ({ scavengerHuntId }, { request }) => {
       const userId = await requireUserId(request);
 
-      console.debug('Getting scavenger hunt with items', userId, scavengerHunt);
-      const data = getScavengerHunt(scavengerHunt, userId);
+      const data = getScavengerHunt(scavengerHuntId, userId);
 
-      console.debug('Scavenger hunt with items', data);
+      const scavengerHunt = data[0].scavenger_hunts;
+      const huntItems = data.map(({ hunt_items }) => hunt_items);
 
-      return data;
+      console.debug('Scavenger hunt with items', scavengerHunt, huntItems);
+
+      return { scavengerHunt, huntItems };
     },
     {
-      key: { scavengerHunt: params.id },
+      key: { scavengerHuntId: params.id },
     }
   );
 }
 
+type AddItemBody = {
+  id: string;
+  title: string;
+  weight: number;
+};
+
 export default function ScavengerHunts() {
-  const scavengerHunt = useRouteData<typeof routeData>();
+  const data = useRouteData<typeof routeData>();
   const [isConfirmationOpen, setIsConfirmationOpen] = createSignal(false);
   const params = useParams();
 
@@ -53,6 +62,15 @@ export default function ScavengerHunts() {
     }
   );
 
+  const [isAddingItem, addItem] = createServerAction$(
+    async ({ id, title, weight }: AddItemBody) => {
+      addHuntItem({ title, weight, scavenger_hunt_id: id });
+    },
+    {
+      invalidate: [{ scavengerHuntId: params.id }],
+    }
+  );
+
   createEffect(() => {
     if (isDeleting.error) {
       setIsConfirmationOpen(false);
@@ -60,7 +78,7 @@ export default function ScavengerHunts() {
   });
 
   const shouldShowLoader = () =>
-    isRouting() || scavengerHunt.loading || isDeleting.pending;
+    isRouting() || data.loading || isDeleting.pending || isAddingItem.pending;
 
   return (
     <>
@@ -74,9 +92,9 @@ export default function ScavengerHunts() {
         <Show when={shouldShowLoader()} fallback={<div class="h-12" />}>
           <Loading class="h-12 mx-auto text-4xl text-orange-700" />
         </Show>
-        <Show when={scavengerHunt()}>
+        <Show when={data()?.scavengerHunt}>
           <h1 class="text-5xl my-4 text-center text-sky-700 font-thin uppercase">
-            {scavengerHunt()?.scavenger_hunts.title}
+            {data()?.scavengerHunt.title}
           </h1>
         </Show>
 
@@ -88,6 +106,26 @@ export default function ScavengerHunts() {
         </button>
         {isDeleting.error && (
           <p class="text-red-600 text-center">Error Deleting Scavenger Hunt</p>
+        )}
+
+        <For each={data()?.huntItems}>
+          {(item) => (
+            <Show when={item}>
+              <h3>
+                {item?.title} - {item?.weight}
+              </h3>
+            </Show>
+          )}
+        </For>
+
+        <ScavengerHuntItemInput
+          disabled={false}
+          onSubmit={(title, weight) =>
+            addItem({ id: params.id, title, weight })
+          }
+        />
+        {isAddingItem.error && (
+          <p class="text-red-600 text-center">Error Adding Item</p>
         )}
       </main>
 
