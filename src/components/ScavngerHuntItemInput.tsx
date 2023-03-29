@@ -38,6 +38,7 @@ const ScavengerHuntItemInput: Component<ScavengerHuntItemInputProps> = ({
     onSubmit(titleInput.value, weightInputParsed);
     titleInput.value = '';
     weightInput.value = '';
+    titleInput.focus();
     setError('');
   };
 

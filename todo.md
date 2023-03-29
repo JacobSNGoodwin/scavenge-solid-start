@@ -26,9 +26,9 @@
 - [x] - fetch details from database (ScavengerHunt and HuntItems)
   - could do a join to get all details, or could fetch separately
 - [ ] - create Title component which is editable
-- [ ] - create Item Component which is editable
-- [ ] - AddNewItem Component
-- [ ] - action to post new item, invalidate existing list of items (refetch details)
+- [x] - AddNewItem Component
+- [x] - action to post new item, invalidate existing list of items (refetch details)
+- [ ] - make item deletable and allow add new item
 
 ## Improvements
 

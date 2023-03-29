@@ -12,12 +12,20 @@ import {
 } from 'solid-start/server';
 import LeftChevronIcon from '~icons/mdi/chevron-left-circle';
 
-import { addHuntItem, deleteScavengerHunt, getScavengerHunt } from '~/db';
+import {
+  addHuntItem,
+  deleteHuntItem,
+  deleteScavengerHunt,
+  getScavengerHunt,
+  updateHuntTitle,
+} from '~/db';
 import { requireUserId } from '~/lib/session';
 import { createEffect, createSignal, For, Show } from 'solid-js';
 import Loading from '~icons/svg-spinners/3-dots-fade';
+import Clear from '~icons/mdi/clear-circle';
 import ConfirmationModal from '~/components/ConfirmationModal';
 import ScavengerHuntItemInput from '~/components/ScavngerHuntItemInput';
+import EditableTitle from '~/components/EditableTitle';
 
 export function routeData({ params }: RouteDataArgs) {
   return createServerData$(
@@ -29,7 +37,7 @@ export function routeData({ params }: RouteDataArgs) {
       const scavengerHunt = data[0].scavenger_hunts;
       const huntItems = data.map(({ hunt_items }) => hunt_items);
 
-      console.debug('Scavenger hunt with items', scavengerHunt, huntItems);
+      // console.debug('Scavenger hunt with items', scavengerHunt, huntItems);
 
       return { scavengerHunt, huntItems };
     },
@@ -43,6 +51,11 @@ type AddItemBody = {
   id: string;
   title: string;
   weight: number;
+};
+
+type UpdateTitleBody = {
+  id: string;
+  title: string;
 };
 
 export default function ScavengerHunts() {
@@ -71,6 +84,29 @@ export default function ScavengerHunts() {
     }
   );
 
+  const [isDeletingItem, deleteItem] = createServerAction$(
+    async (id: string) => {
+      deleteHuntItem(id);
+    },
+    {
+      invalidate: [{ scavengerHuntId: params.id }],
+    }
+  );
+
+  const [isUpdatingTitle, updateTitle] = createServerAction$(
+    async ({ id, title }: UpdateTitleBody, { request }) => {
+      const userId = await requireUserId(request);
+      updateHuntTitle({
+        id,
+        title,
+        userId,
+      });
+    },
+    {
+      invalidate: [{ scavengerHuntId: params.id }],
+    }
+  );
+
   createEffect(() => {
     if (isDeleting.error) {
       setIsConfirmationOpen(false);
@@ -78,7 +114,12 @@ export default function ScavengerHunts() {
   });
 
   const shouldShowLoader = () =>
-    isRouting() || data.loading || isDeleting.pending || isAddingItem.pending;
+    isRouting() ||
+    data.loading ||
+    isDeleting.pending ||
+    isAddingItem.pending ||
+    isDeletingItem.pending ||
+    isUpdatingTitle.pending;
 
   return (
     <>
@@ -93,9 +134,14 @@ export default function ScavengerHunts() {
           <Loading class="h-12 mx-auto text-4xl text-orange-700" />
         </Show>
         <Show when={data()?.scavengerHunt}>
-          <h1 class="text-5xl my-4 text-center text-sky-700 font-thin uppercase">
-            {data()?.scavengerHunt.title}
-          </h1>
+          <EditableTitle
+            title={
+              isUpdatingTitle.input?.title ??
+              data()?.scavengerHunt.title ??
+              'Your Scavenger Hunt'
+            }
+            onSave={(title) => updateTitle({ id: params.id, title })}
+          />
         </Show>
 
         <button
@@ -111,9 +157,15 @@ export default function ScavengerHunts() {
         <For each={data()?.huntItems}>
           {(item) => (
             <Show when={item}>
-              <h3>
-                {item?.title} - {item?.weight}
-              </h3>
+              <div class="flex justify-between items-center text-lg">
+                <span>{item!.title}</span>
+                <div class="flex items-center">
+                  <span class="mx-4">{item!.weight}</span>
+                  <button onClick={() => deleteItem(item!.id)}>
+                    <Clear class="text-red-700 hover:text-red-500" />
+                  </button>
+                </div>
+              </div>
             </Show>
           )}
         </For>

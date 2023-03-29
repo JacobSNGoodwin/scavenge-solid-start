@@ -83,6 +83,21 @@ export const deleteScavengerHunt = (id: string, userId: string) =>
     )
     .run();
 
+type UpdateItem = {
+  id: string;
+  userId: string;
+  title: string;
+};
+
+export const updateHuntTitle = ({ id, userId, title }: UpdateItem) =>
+  db
+    .update(scavenger_hunts)
+    .set({ title: title })
+    .where(
+      and(eq(scavenger_hunts.id, id), eq(scavenger_hunts.created_by, userId))
+    )
+    .run();
+
 export const addHuntItem = ({
   scavenger_hunt_id,
   title,
@@ -97,3 +112,9 @@ export const addHuntItem = ({
     })
     .run();
 };
+
+export const deleteHuntItem = (id: string) =>
+  db
+    .delete(hunt_items)
+    .where(and(eq(hunt_items.id, id)))
+    .run();
