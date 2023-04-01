@@ -25,12 +25,15 @@
 
 - [x] - fetch details from database (ScavengerHunt and HuntItems)
   - could do a join to get all details, or could fetch separately
-- [ ] - create Title component which is editable
+- [x] - create Title component which is editable
 - [x] - AddNewItem Component
 - [x] - action to post new item, invalidate existing list of items (refetch details)
-- [ ] - make item deletable and allow add new item
+- [x] - make item deletable and allow add new item
+
+## Pretty View-Only Page
 
 ## Improvements
 
 - [x] - Loading transitions between pages?
   - maybe a component
+- [ ] - check Auth0 state
