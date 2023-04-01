@@ -6,7 +6,11 @@ const storage = createCookieSessionStorage({
   cookie: {
     name: 'session',
     secure: process.env.NODE_ENV === 'production',
-    secrets: [process.env.SESSION_SECRET!],
+    secrets: [
+      process.env.SESSION_SECRET_1!,
+      process.env.SESSION_SECRET_2!,
+      process.env.SESSION_SECRET_3!,
+    ],
     sameSite: 'lax',
     path: '/',
     maxAge: 60 * 60 * 24 * 5,
@@ -16,7 +20,6 @@ const storage = createCookieSessionStorage({
 
 export async function getUser(request: Request): Promise<User | null> {
   const cookie = request.headers.get('Cookie') ?? '';
-  console.debug('the cookie', cookie);
   const session = await storage.getSession(cookie);
   const userId = session.get('userId');
 
@@ -42,7 +45,9 @@ export async function createUserSession(userId: string, redirectTo: string) {
 
 export async function requireUserId(request: Request) {
   const session = await storage.getSession(request.headers.get('Cookie'));
+
   const userId = session.get('userId');
+  console.log('retrieved session', session.id, session.data, userId);
   if (!userId || typeof userId !== 'string') {
     throw redirect(`/`);
   }
