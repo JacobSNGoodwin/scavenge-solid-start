@@ -64,7 +64,7 @@ export const addScavengerHunt = (title: string, userId: string) =>
     .returning()
     .get();
 
-export const getScavengerHunt = (id: string, userId: string) =>
+export const getUserScavengerHunt = (id: string, userId: string) =>
   db
     .select()
     .from(scavenger_hunts)
@@ -72,6 +72,15 @@ export const getScavengerHunt = (id: string, userId: string) =>
     .where(
       and(eq(scavenger_hunts.id, id), eq(scavenger_hunts.created_by, userId))
     )
+    .orderBy(asc(hunt_items.weight))
+    .all();
+
+export const getScavengerHunt = (id: string) =>
+  db
+    .select()
+    .from(scavenger_hunts)
+    .leftJoin(hunt_items, eq(hunt_items.scavenger_hunt_id, scavenger_hunts.id))
+    .where(eq(scavenger_hunts.id, id))
     .orderBy(asc(hunt_items.weight))
     .all();
 

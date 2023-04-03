@@ -16,28 +16,35 @@ import {
   addHuntItem,
   deleteHuntItem,
   deleteScavengerHunt,
-  getScavengerHunt,
+  getUserScavengerHunt,
   updateHuntTitle,
 } from '~/db';
 import { requireUserId } from '~/lib/session';
 import { createEffect, createSignal, For, Show } from 'solid-js';
 import Loading from '~icons/svg-spinners/3-dots-fade';
+import ExternalLink from '~icons/ci/external-link';
 import Clear from '~icons/mdi/clear-circle';
 import ConfirmationModal from '~/components/ConfirmationModal';
 import ScavengerHuntItemInput from '~/components/ScavngerHuntItemInput';
 import EditableTitle from '~/components/EditableTitle';
+import { HuntItem } from '~/db/schema';
 
 export function routeData({ params }: RouteDataArgs) {
   return createServerData$(
     async ({ scavengerHuntId }, { request }) => {
       const userId = await requireUserId(request);
 
-      const data = getScavengerHunt(scavengerHuntId, userId);
+      const data = getUserScavengerHunt(scavengerHuntId, userId);
 
       const scavengerHunt = data[0].scavenger_hunts;
-      const huntItems = data.map(({ hunt_items }) => hunt_items);
+      const huntItems = data.reduce((prevHuntItems, { hunt_items: item }) => {
+        if (item !== null) {
+          return [...prevHuntItems, item];
+        }
+        return prevHuntItems;
+      }, [] as HuntItem[]);
 
-      // console.debug('Scavenger hunt with items', scavengerHunt, huntItems);
+      console.debug('Scavenger hunt with items', scavengerHunt, huntItems);
 
       return { scavengerHunt, huntItems };
     },
@@ -179,6 +186,16 @@ export default function ScavengerHunts() {
         {isAddingItem.error && (
           <p class="text-red-600 text-center">Error Adding Item</p>
         )}
+
+        <A
+          target="_blank"
+          rel="noopener noreferrer"
+          href="shareable"
+          class="mx-auto flex justify-center items-center text-sky-700 hover:text-sky-600 text-xl"
+        >
+          <span class="mr-2">View Shareable Poll</span>
+          <ExternalLink />
+        </A>
       </main>
 
       <ConfirmationModal

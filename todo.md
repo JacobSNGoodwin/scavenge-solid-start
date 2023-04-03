@@ -32,6 +32,9 @@
 
 ## Pretty View-Only Page
 
+- [ ] - shareable link
+- [ ] - page
+
 ## Improvements
 
 - [x] - Loading transitions between pages?
