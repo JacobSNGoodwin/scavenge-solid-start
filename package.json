@@ -5,7 +5,8 @@
     "db:migration:generate": "pnpm exec drizzle-kit generate:sqlite --schema=./src/db/schema.ts --out ./migrations",
     "db:migration:migrate": "pnpm exec tsx migrate.ts",
     "build": "solid-start build",
-    "start": "solid-start start"
+    "start": "solid-start start",
+    "get:version": "node -v"
   },
   "type": "module",
   "devDependencies": {
