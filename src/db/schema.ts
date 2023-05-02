@@ -1,26 +1,26 @@
 import {
-  blob,
   index,
   InferModel,
-  integer,
-  sqliteTable,
-  text,
+  tinyint,
+  json,
+  mysqlTable,
   uniqueIndex,
-} from 'drizzle-orm/sqlite-core';
+  varchar,
+} from 'drizzle-orm/mysql-core';
 
 type ProviderId = string;
 type ExternalConnectionData = Record<string, ProviderId>;
 
-export const users = sqliteTable(
+export const users = mysqlTable(
   'users',
   {
-    id: text('id').primaryKey(),
-    external_connections: blob<ExternalConnectionData>('external_connections', {
-      mode: 'json',
-    }).notNull(),
-    email: text('email'),
-    name: text('name'),
-    avatar_url: text('avatar_url'),
+    id: varchar('id', { length: 20 }).primaryKey(),
+    external_connections: json<ExternalConnectionData>(
+      'external_connections'
+    ).notNull(),
+    email: varchar('email', { length: 256 }),
+    name: varchar('name', { length: 256 }),
+    avatar_url: varchar('avatar_url', { length: 256 }),
   },
   (users) => ({
     emailIdx: uniqueIndex('emailIdx').on(users.email),
@@ -28,12 +28,12 @@ export const users = sqliteTable(
 );
 export type User = InferModel<typeof users>;
 
-export const scavenger_hunts = sqliteTable(
+export const scavenger_hunts = mysqlTable(
   'scavenger_hunts',
   {
-    id: text('id').primaryKey(),
-    title: text('title').notNull(),
-    created_by: text('created_by')
+    id: varchar('id', { length: 20 }).primaryKey(),
+    title: varchar('title', { length: 256 }).notNull(),
+    created_by: varchar('created_by', { length: 256 })
       .notNull()
       .references(() => users.id),
   },
@@ -43,14 +43,14 @@ export const scavenger_hunts = sqliteTable(
 );
 export type ScavengerHunt = InferModel<typeof scavenger_hunts>;
 
-export const hunt_items = sqliteTable('hunt_items', {
-  id: text('id').primaryKey(),
-  scavenger_hunt_id: text('scavenger_hunt_id')
+export const hunt_items = mysqlTable('hunt_items', {
+  id: varchar('id', { length: 20 }).primaryKey(),
+  scavenger_hunt_id: varchar('scavenger_hunt_id', { length: 256 })
     .notNull()
     .references(() => scavenger_hunts.id, {
       onDelete: 'cascade',
     }),
-  title: text('title').notNull(),
-  weight: integer('weight').default(1).notNull(),
+  title: varchar('title', { length: 256 }).notNull(),
+  weight: tinyint('weight').default(1).notNull(),
 });
 export type HuntItem = InferModel<typeof hunt_items>;

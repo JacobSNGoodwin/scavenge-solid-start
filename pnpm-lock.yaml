@@ -1,6 +1,9 @@
 lockfileVersion: '6.0'
 
 dependencies:
+  '@planetscale/database':
+    specifier: ^1.7.0
+    version: 1.7.0
   '@solidjs/meta':
     specifier: ^0.28.2
     version: 0.28.2(solid-js@1.6.15)
@@ -12,7 +15,7 @@ dependencies:
     version: 8.2.0
   drizzle-orm:
     specifier: ^0.22.0
-    version: 0.22.0(@types/better-sqlite3@7.6.3)(better-sqlite3@8.2.0)
+    version: 0.22.0(@planetscale/database@1.7.0)(@types/better-sqlite3@7.6.3)(better-sqlite3@8.2.0)
   nanoid:
     specifier: ^4.0.1
     version: 4.0.1
@@ -1497,6 +1500,11 @@ packages:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.15.0
 
+  /@planetscale/database@1.7.0:
+    resolution: {integrity: sha512-lWR6biXChUyQnxsT4RT1CIeR3ZJvwTQXiQ+158MnY3VjLwjHEGakDzdH9kwUGPk6CHvu6UeqRXp1DgUOVHJFTw==}
+    engines: {node: '>=16'}
+    dev: false
+
   /@polka/url@1.0.0-next.21:
     resolution: {integrity: sha512-a5Sab1C4/icpTZVzZc5Ghpz88yQtGOyNqYXcZgOssB2uuAr+wF/MvN6bgtW32q7HHrvBki+BsZ0OuNv6EV3K9g==}
 
@@ -2147,7 +2155,7 @@ packages:
       - supports-color
     dev: true
 
-  /drizzle-orm@0.22.0(@types/better-sqlite3@7.6.3)(better-sqlite3@8.2.0):
+  /drizzle-orm@0.22.0(@planetscale/database@1.7.0)(@types/better-sqlite3@7.6.3)(better-sqlite3@8.2.0):
     resolution: {integrity: sha512-oZ/CNbv3NXoCxmBWTPNAZHZkuzhacT+eXM0ywemkHSTiqEJe79VQ1jvGVd0fQthfOt1UHRMuAW0CeIizhQpb2Q==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3 <4'
@@ -2194,6 +2202,7 @@ packages:
       sqlite3:
         optional: true
     dependencies:
+      '@planetscale/database': 1.7.0
       '@types/better-sqlite3': 7.6.3
       better-sqlite3: 8.2.0
     dev: false

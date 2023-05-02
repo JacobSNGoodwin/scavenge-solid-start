@@ -1,5 +1,5 @@
-import Database from 'better-sqlite3';
-import { BetterSQLite3Database, drizzle } from 'drizzle-orm/better-sqlite3';
+import { drizzle } from 'drizzle-orm/planetscale-serverless';
+import { connect } from '@planetscale/database';
 
 import { and, asc, eq } from 'drizzle-orm/expressions';
 import { nanoid } from 'nanoid';
@@ -12,14 +12,17 @@ import {
   users,
 } from './schema';
 
-const sqlite = new Database('scavenge.db');
-const db: BetterSQLite3Database = drizzle(sqlite);
+const connection = connect({
+  host: process?.env?.PLANET_SCALE_HOST,
+  username: process?.env?.PLANET_SCALE_USERNAME,
+  password: process?.env?.PLANET_SCALE_PW,
+});
 
-// better-sqlite3 is syncronous
+const db = drizzle(connection);
 
-export const getUserByEmail = (email: string): User | null => {
+export const getUserByEmail = async (email: string): Promise<User | null> => {
   // you'd think this would handle not found. Sigh!
-  const rows = db.select().from(users).where(eq(users.email, email)).all();
+  const rows = await db.select().from(users).where(eq(users.email, email));
 
   if (!rows.length) {
     return null;
@@ -28,43 +31,59 @@ export const getUserByEmail = (email: string): User | null => {
   return rows[0];
 };
 
-export const getUserById = (id: string): User =>
-  db.select().from(users).where(eq(users.id, id)).get();
+export const getUserById = async (id: string): Promise<User | null> => {
+  const rows = await db.select().from(users).where(eq(users.id, id));
+
+  if (!rows.length) {
+    return null;
+  }
+
+  return rows[0];
+};
 
 type NewUserData = Omit<User, 'id'>;
 
-export const createNewUser = (user: NewUserData) => {
+export const createNewUser = async (user: NewUserData): Promise<string> => {
   const id = nanoid(20);
 
-  const { id: createdId } = db
-    .insert(users)
-    .values({ ...user, id })
-    .returning()
-    .get();
+  await db.insert(users).values({ ...user, id });
 
-  return createdId;
+  return id;
 };
 
-export const getUserScavengerHunts = (userId: string): Array<ScavengerHunt> =>
+export const getUserScavengerHunts = async (
+  userId: string
+): Promise<Array<ScavengerHunt>> =>
   db
     .select()
     .from(scavenger_hunts)
     .where(eq(scavenger_hunts.created_by, userId))
-    .orderBy(asc(scavenger_hunts.title))
-    .all();
+    .orderBy(asc(scavenger_hunts.title));
 
-export const addScavengerHunt = (title: string, userId: string) =>
-  db
-    .insert(scavenger_hunts)
-    .values({
-      id: nanoid(20),
-      created_by: userId,
-      title,
-    })
-    .returning()
-    .get();
+export const addScavengerHunt = async (
+  title: string,
+  userId: string
+): Promise<ScavengerHunt | null> => {
+  const newId = nanoid(20);
+  await db.insert(scavenger_hunts).values({
+    id: newId,
+    created_by: userId,
+    title,
+  });
 
-export const getUserScavengerHunt = (id: string, userId: string) =>
+  const rows = await db
+    .select()
+    .from(scavenger_hunts)
+    .where(eq(scavenger_hunts.id, newId));
+
+  if (!rows.length) {
+    return null;
+  }
+
+  return rows[0];
+};
+
+export const getUserScavengerHunt = async (id: string, userId: string) =>
   db
     .select()
     .from(scavenger_hunts)
@@ -72,25 +91,22 @@ export const getUserScavengerHunt = (id: string, userId: string) =>
     .where(
       and(eq(scavenger_hunts.id, id), eq(scavenger_hunts.created_by, userId))
     )
-    .orderBy(asc(hunt_items.weight))
-    .all();
+    .orderBy(asc(hunt_items.weight));
 
-export const getScavengerHunt = (id: string) =>
+export const getScavengerHunt = async (id: string) =>
   db
     .select()
     .from(scavenger_hunts)
     .leftJoin(hunt_items, eq(hunt_items.scavenger_hunt_id, scavenger_hunts.id))
     .where(eq(scavenger_hunts.id, id))
-    .orderBy(asc(hunt_items.weight))
-    .all();
+    .orderBy(asc(hunt_items.weight));
 
-export const deleteScavengerHunt = (id: string, userId: string) =>
+export const deleteScavengerHunt = async (id: string, userId: string) =>
   db
     .delete(scavenger_hunts)
     .where(
       and(eq(scavenger_hunts.id, id), eq(scavenger_hunts.created_by, userId))
-    )
-    .run();
+    );
 
 type UpdateItem = {
   id: string;
@@ -98,32 +114,26 @@ type UpdateItem = {
   title: string;
 };
 
-export const updateHuntTitle = ({ id, userId, title }: UpdateItem) =>
+export const updateHuntTitle = async ({ id, userId, title }: UpdateItem) =>
   db
     .update(scavenger_hunts)
     .set({ title: title })
     .where(
       and(eq(scavenger_hunts.id, id), eq(scavenger_hunts.created_by, userId))
-    )
-    .run();
+    );
 
-export const addHuntItem = ({
+export const addHuntItem = async ({
   scavenger_hunt_id,
   title,
   weight,
 }: Omit<HuntItem, 'id'>) => {
-  db.insert(hunt_items)
-    .values({
-      id: nanoid(20),
-      title,
-      weight,
-      scavenger_hunt_id,
-    })
-    .run();
+  db.insert(hunt_items).values({
+    id: nanoid(20),
+    title,
+    weight,
+    scavenger_hunt_id,
+  });
 };
 
-export const deleteHuntItem = (id: string) =>
-  db
-    .delete(hunt_items)
-    .where(and(eq(hunt_items.id, id)))
-    .run();
+export const deleteHuntItem = async (id: string) =>
+  db.delete(hunt_items).where(and(eq(hunt_items.id, id)));
