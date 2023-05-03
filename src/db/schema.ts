@@ -33,9 +33,8 @@ export const scavenger_hunts = mysqlTable(
   {
     id: varchar('id', { length: 20 }).primaryKey(),
     title: varchar('title', { length: 256 }).notNull(),
-    created_by: varchar('created_by', { length: 256 })
-      .notNull()
-      .references(() => users.id),
+    created_by: varchar('created_by', { length: 256 }).notNull(),
+    // .references(() => users.id), // not supported by planet scale
   },
   (scavenger_hunts) => ({
     createdByIdx: index('created_by_idx').on(scavenger_hunts.created_by),
@@ -45,11 +44,10 @@ export type ScavengerHunt = InferModel<typeof scavenger_hunts>;
 
 export const hunt_items = mysqlTable('hunt_items', {
   id: varchar('id', { length: 20 }).primaryKey(),
-  scavenger_hunt_id: varchar('scavenger_hunt_id', { length: 256 })
-    .notNull()
-    .references(() => scavenger_hunts.id, {
-      onDelete: 'cascade',
-    }),
+  scavenger_hunt_id: varchar('scavenger_hunt_id', { length: 256 }).notNull(),
+  // .references(() => scavenger_hunts.id, {
+  //   onDelete: 'cascade',
+  // }),
   title: varchar('title', { length: 256 }).notNull(),
   weight: tinyint('weight').default(1).notNull(),
 });

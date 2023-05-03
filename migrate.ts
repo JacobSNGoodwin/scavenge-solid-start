@@ -1,8 +1,16 @@
-import Database from 'better-sqlite3';
-import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
-import { drizzle } from 'drizzle-orm/better-sqlite3';
+import { drizzle } from 'drizzle-orm/planetscale-serverless';
+import { connect } from '@planetscale/database';
+import { migrate } from 'drizzle-orm/planetscale-serverless/migrator';
+import * as dotenv from 'dotenv';
 
-const sqlite = new Database('scavenge.db');
-const db = drizzle(sqlite);
+dotenv.config({ path: './.env.local' });
+
+const connection = connect({
+  host: process?.env?.PLANET_SCALE_HOST,
+  username: process?.env?.PLANET_SCALE_USERNAME,
+  password: process?.env?.PLANET_SCALE_PW,
+});
+
+const db = drizzle(connection);
 
 migrate(db, { migrationsFolder: './migrations' });
