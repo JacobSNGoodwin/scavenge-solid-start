@@ -23,7 +23,9 @@ export async function getUser(request: Request): Promise<User | null> {
   const session = await storage.getSession(cookie);
   const userId = session.get('userId');
 
-  if (!userId) return null;
+  // userId can be an empty object for expired sessions.
+  // This seems like a weird way to do things, but hey, whatever.
+  if (!userId || Object.keys(userId).length) return null;
 
   return getUserById(userId);
 }
@@ -47,10 +49,11 @@ export async function requireUserId(request: Request) {
   const session = await storage.getSession(request.headers.get('Cookie'));
 
   const userId = session.get('userId');
-  console.log('retrieved session', session.id, session.data, userId);
+  console.log('retrieved session', session.data, userId);
   if (!userId || typeof userId !== 'string') {
     throw redirect(`/`);
   }
+
   return userId;
 }
 

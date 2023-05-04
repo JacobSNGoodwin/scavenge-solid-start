@@ -1,7 +1,7 @@
 import { drizzle } from 'drizzle-orm/planetscale-serverless';
 import { connect } from '@planetscale/database';
 
-import { and, asc, eq } from 'drizzle-orm/expressions';
+import { and, asc, eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import {
   HuntItem,
@@ -101,12 +101,16 @@ export const getScavengerHunt = async (id: string) =>
     .where(eq(scavenger_hunts.id, id))
     .orderBy(asc(hunt_items.weight));
 
-export const deleteScavengerHunt = async (id: string, userId: string) =>
-  db
+export const deleteScavengerHunt = async (id: string, userId: string) => {
+  await db
     .delete(scavenger_hunts)
     .where(
       and(eq(scavenger_hunts.id, id), eq(scavenger_hunts.created_by, userId))
     );
+
+  // since we don't have foreign key relations, we must delete
+  await db.delete(hunt_items).where(eq(hunt_items.scavenger_hunt_id, id));
+};
 
 type UpdateItem = {
   id: string;
@@ -127,7 +131,7 @@ export const addHuntItem = async ({
   title,
   weight,
 }: Omit<HuntItem, 'id'>) => {
-  db.insert(hunt_items).values({
+  await db.insert(hunt_items).values({
     id: nanoid(20),
     title,
     weight,
@@ -135,5 +139,6 @@ export const addHuntItem = async ({
   });
 };
 
-export const deleteHuntItem = async (id: string) =>
-  db.delete(hunt_items).where(and(eq(hunt_items.id, id)));
+export const deleteHuntItem = async (id: string) => {
+  await db.delete(hunt_items).where(and(eq(hunt_items.id, id)));
+};

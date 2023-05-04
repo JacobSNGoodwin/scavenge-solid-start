@@ -16,10 +16,13 @@ export function routeData({}: RouteDataArgs) {
     async (_, { request }) => {
       const userId = await requireUserId(request);
 
-      const scavengerHunts = getUserScavengerHunts(userId);
+      const scavengerHunts = await getUserScavengerHunts(userId);
+      const user = await getUserById(userId);
+
+      console.info('Retried data', { user, scavengerHunts });
 
       return {
-        user: getUserById(userId),
+        user,
         scavengerHunts,
       };
     },
@@ -40,9 +43,13 @@ export default function ScavengerHunts() {
     async (title: string, { request }) => {
       const userId = await requireUserId(request);
 
-      const { id: newId } = addScavengerHunt(title, userId);
+      const newScavengerHunt = await addScavengerHunt(title, userId);
 
-      return redirect(`${newId}`);
+      if (!newScavengerHunt) {
+        throw new Error('Unable to Create New Scavenger Hunt');
+      }
+
+      return redirect(`${newScavengerHunt.id}`);
     },
     { invalidate: ['scavenger-hunts'] }
   );
@@ -66,7 +73,10 @@ export default function ScavengerHunts() {
         {isLoggingOut.pending ? 'Logging out' : 'Logout'}
       </button>
 
-      <Show when={data()?.user.name} fallback={<h2>Welcome!</h2>}>
+      <Show
+        when={data()?.user?.name}
+        fallback={<h2 class="text-center">Welcome!</h2>}
+      >
         <h2 class="text-center">Welcome, {data()?.user?.name}</h2>
       </Show>
 

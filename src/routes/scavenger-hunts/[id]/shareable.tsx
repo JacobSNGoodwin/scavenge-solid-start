@@ -8,7 +8,7 @@ import Checkbox from '~icons/ci/checkbox-unchecked';
 export function routeData({ params }: RouteDataArgs) {
   return createServerData$(
     async ({ scavengerHuntId }, { request }) => {
-      const data = getScavengerHunt(scavengerHuntId);
+      const data = await getScavengerHunt(scavengerHuntId);
 
       const scavengerHunt = data[0].scavenger_hunts;
 

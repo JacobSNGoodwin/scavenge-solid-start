@@ -1,12 +1,13 @@
 import {
   index,
-  InferModel,
   tinyint,
   json,
   mysqlTable,
   uniqueIndex,
   varchar,
 } from 'drizzle-orm/mysql-core';
+
+import { InferModel } from 'drizzle-orm';
 
 type ProviderId = string;
 type ExternalConnectionData = Record<string, ProviderId>;
@@ -15,9 +16,9 @@ export const users = mysqlTable(
   'users',
   {
     id: varchar('id', { length: 20 }).primaryKey(),
-    external_connections: json<ExternalConnectionData>(
-      'external_connections'
-    ).notNull(),
+    external_connections: json('external_connections')
+      .$type<ExternalConnectionData>()
+      .notNull(),
     email: varchar('email', { length: 256 }),
     name: varchar('name', { length: 256 }),
     avatar_url: varchar('avatar_url', { length: 256 }),

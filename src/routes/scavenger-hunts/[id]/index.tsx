@@ -34,7 +34,7 @@ export function routeData({ params }: RouteDataArgs) {
     async ({ scavengerHuntId }, { request }) => {
       const userId = await requireUserId(request);
 
-      const data = getUserScavengerHunt(scavengerHuntId, userId);
+      const data = await getUserScavengerHunt(scavengerHuntId, userId);
 
       const scavengerHunt = data[0].scavenger_hunts;
       const huntItems = data.reduce((prevHuntItems, { hunt_items: item }) => {
@@ -76,7 +76,7 @@ export default function ScavengerHunts() {
     async (id: string, { request }) => {
       const userId = await requireUserId(request);
 
-      deleteScavengerHunt(id, userId);
+      await deleteScavengerHunt(id, userId);
 
       return redirect('/scavenger-hunts');
     }
@@ -84,7 +84,7 @@ export default function ScavengerHunts() {
 
   const [isAddingItem, addItem] = createServerAction$(
     async ({ id, title, weight }: AddItemBody) => {
-      addHuntItem({ title, weight, scavenger_hunt_id: id });
+      await addHuntItem({ title, weight, scavenger_hunt_id: id });
     },
     {
       invalidate: [{ scavengerHuntId: params.id }],
@@ -93,7 +93,7 @@ export default function ScavengerHunts() {
 
   const [isDeletingItem, deleteItem] = createServerAction$(
     async (id: string) => {
-      deleteHuntItem(id);
+      await deleteHuntItem(id);
     },
     {
       invalidate: [{ scavengerHuntId: params.id }],
@@ -103,7 +103,8 @@ export default function ScavengerHunts() {
   const [isUpdatingTitle, updateTitle] = createServerAction$(
     async ({ id, title }: UpdateTitleBody, { request }) => {
       const userId = await requireUserId(request);
-      updateHuntTitle({
+      // I think we have to await to prevent invalidate from running too soon
+      await updateHuntTitle({
         id,
         title,
         userId,
@@ -155,7 +156,7 @@ export default function ScavengerHunts() {
           class="block mx-auto my-4 bg-red-700 hover:bg-red-600 transition-colors duration-300 text-white p-2 rounded-lg"
           onClick={() => setIsConfirmationOpen(true)}
         >
-          Delete Poll
+          Delete Scavenger Hunt
         </button>
         {isDeleting.error && (
           <p class="text-red-600 text-center">Error Deleting Scavenger Hunt</p>
@@ -193,7 +194,7 @@ export default function ScavengerHunts() {
           href="shareable"
           class="mx-auto flex justify-center items-center text-sky-700 hover:text-sky-600 text-xl"
         >
-          <span class="mr-2">View Shareable Poll</span>
+          <span class="mr-2">View Shareable Hunt</span>
           <ExternalLink />
         </A>
       </main>

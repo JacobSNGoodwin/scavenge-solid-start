@@ -51,22 +51,22 @@ export function routeData({ location, params }: RouteDataArgs) {
         // create session
         const email = externalUserData[config.fields.email];
 
-        const user = getUserByEmail(email);
+        const user = await getUserByEmail(email);
 
         if (!user) {
-          console.info('creating new user', user);
+          console.info('creating new user with email', email);
         }
 
         const userId: string =
           user?.id ??
-          createNewUser({
+          (await createNewUser({
             avatar_url: externalUserData[config.fields.avatar_url],
             email: externalUserData[config.fields.email],
             name: externalUserData[config.fields.name],
             external_connections: {
               [provider]: externalUserData[config.fields.id],
             },
-          });
+          }));
 
         return createUserSession(userId, '/scavenger-hunts');
       } catch (e) {
