@@ -17,6 +17,7 @@ netlify
 
 # environment
 .env.*
+!.env.example
 
 # Temp
 gitignore
